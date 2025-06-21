@@ -45,7 +45,7 @@ The executable takes **14 parameters**:
 * Handles communication asynchronously with `MPI_Isend` / `MPI_Irecv`
 * Avoids initialization bugs and ensures correct reduction semantics
 
-### 🔸 MPI + OpenMP (Hybrid)
+### 🔹 MPI + OpenMP (Hybrid)
 
 * MPI handles pattern distribution across processes
 * OpenMP accelerates intra-process computation
@@ -53,7 +53,7 @@ The executable takes **14 parameters**:
 * MPI communication remains serialized to avoid thread-safety issues
 * Improved speedup and memory usage compared to pure MPI
 
-### 🟩 CUDA
+### 🔸 CUDA
 
 * Implements brute-force pattern matching on GPU with a 2D grid layout:
 
