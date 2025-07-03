@@ -47,26 +47,34 @@ double cp_Wtime(){
  */
 
 /*
- * Function: Increment the number of pattern matches on the sequence positions
- * 	This function can be changed and/or optimized by the students
+ * Funzione: Incrementa il numero di match trovati
+ * Per ogni posizione di un pattern che si trova in `seq_matches`,
+ * incrementa il contatore se è già stato trovato un match, altrimenti inizializza a 0.
  */
+
+ //FIX -> QUESTA FUNZIONE PUO ESSERE MODIFICATA
+
+ // pat_found -> posizione iniziale del pattern pat nella sequenza principale
+ // pat_length -> lunghezza di ogni pattern
+ // seq_matches -> numero di match trovati per ogni posizione della sequenza principale
 void increment_matches( int pat, unsigned long *pat_found, unsigned long *pat_length, int *seq_matches ) {
 	unsigned long ind;	
 	for( ind=0; ind<pat_length[pat]; ind++) {
 		if ( seq_matches[ pat_found[pat] + ind ] == NOT_FOUND )
-			seq_matches[ pat_found[pat] + ind ] = 0;
+			seq_matches[ pat_found[pat] + ind ] = 0; //inizializza a 0 se nessun match trovato
 		else
-			seq_matches[ pat_found[pat] + ind ] ++;
-	}
+			seq_matches[ pat_found[pat] + ind ] ++; //incrementa il contatore
+	} 
 }
 
 /*
- * Function: Fill random sequence or pattern
+ * Funzione: Riempie una sequenza casuale con nucleotidi (G, C, A, T)
+ * Usa probabilità specifiche per determinare il nucleotide
  */
 void generate_rng_sequence( rng_t *random, float prob_G, float prob_C, float prob_A, char *seq, unsigned long length) {
 	unsigned long ind; 
 	for( ind=0; ind<length; ind++ ) {
-		double prob = rng_next( random );
+		double prob = rng_next( random ); //ottiene un numero casuale
 		if( prob < prob_G ) seq[ind] = 'G';
 		else if( prob < prob_C ) seq[ind] = 'C';
 		else if( prob < prob_A ) seq[ind] = 'A';
@@ -75,7 +83,8 @@ void generate_rng_sequence( rng_t *random, float prob_G, float prob_C, float pro
 }
 
 /*
- * Function: Copy a sample of the sequence
+ * Funzione: copia una sottostringa (pattern) dalla sequenza principale a partire 
+ * da una posizione calcolata in modo casuale (secondo una distribuzione normale)
  */
 void copy_sample_sequence( rng_t *random, char *sequence, unsigned long seq_length, unsigned long pat_samp_loc_mean, unsigned long pat_samp_loc_dev, char *pattern, unsigned long length) {
 	/* Choose location */
@@ -432,6 +441,16 @@ int main(int argc, char *argv[]) {
 	/* 9.1. Total computation time */
 	printf("Time: %lf\n", ttotal );
 
+	FILE *file = fopen("speedup_omp_resources.csv", "a");
+	if (file == NULL) {
+		perror("Errore nell'aprire il file");
+		return 1;
+	}
+
+	// Scrive il valore ttotal alla fine del file, separato da una virgola e un newline
+	fprintf(file, "%.6lf\n", ttotal);
+	fclose(file);
+	
 	/* 9.2. Results: Statistics */
 	printf("Result: %d, %lu, %lu\n\n", 
 			pat_matches,
