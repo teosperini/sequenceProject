@@ -75,16 +75,16 @@ double cp_Wtime(){
  *    - localPat (thread y) è l’indice di pattern relativo nel batch 
  */
 __global__ void matchPatternsKernel(
-    char* d_sequence, unsigned long seq_length, unsigned long seqStart, unsigned long chunkLen,
-    char** d_patterns, unsigned long* d_pat_length, unsigned long patStart, unsigned long patEnd,
-    unsigned long long* d_pat_found, int* d_pat_matches)
+	char* d_sequence, unsigned long seq_length, unsigned long seqStart, unsigned long chunkLen,
+	char** d_patterns, unsigned long* d_pat_length, unsigned long patStart, unsigned long patEnd,
+	unsigned long long* d_pat_found, int* d_pat_matches)
 {
 
-    // Posizione della sequenza che stiamo analizzando
-    unsigned long offset = blockIdx.x * blockDim.x + threadIdx.x;
+	// Posizione della sequenza che stiamo analizzando
+	unsigned long offset = blockIdx.x * blockDim.x + threadIdx.x;
 	// Quale pattern stiamo controllando
-    unsigned long localPat = blockIdx.y * blockDim.y + threadIdx.y;
-    unsigned long patIndex = patStart + localPat; // Indice assoluto del pattern
+	unsigned long localPat = blockIdx.y * blockDim.y + threadIdx.y;
+	unsigned long patIndex = patStart + localPat; // Indice assoluto del pattern
 	unsigned long patLen = d_pat_length[patIndex]; // Lunghezza del pattern
 
 	// Controllo di non andare oltre la lunghezza totale della sequenza
@@ -93,27 +93,27 @@ __global__ void matchPatternsKernel(
 	}
 
 	// Controllo di non sforare il chunk
-    if (offset + patLen > chunkLen) {
-        return;
-    }
+	if (offset + patLen > chunkLen) {
+		return;
+	}
 
 	// Confronto carattere per carattere
-    bool match = true;
-    for (unsigned long j = 0; j < patLen; j++) {
+	bool match = true;
+	for (unsigned long j = 0; j < patLen; j++) {
 		// Se un carattere non corrisponde, il pattern non è presente in questa posizione
-        if (d_sequence[seqStart + offset + j] != d_patterns[patIndex][j]) {
-            match = false;
-            break;
-        }
-    }
+		if (d_sequence[seqStart + offset + j] != d_patterns[patIndex][j]) {
+			match = false;
+			break;
+		}
+	}
 
 	__syncthreads();
 
 	/*Se c'è corrispondenza: 
-     * - atomicCAS su d_pat_found, in modo che solo il primo thread che entra scrive la posizione (seqStart+offset)
-     * - atomicAdd su d_pat_matches per incrementare il contatore di pattern trovati
+	 * - atomicCAS su d_pat_found, in modo che solo il primo thread che entra scrive la posizione (seqStart+offset)
+	 * - atomicAdd su d_pat_matches per incrementare il contatore di pattern trovati
 	 */
-    if (match) {
+	if (match) {
 		if (atomicCAS(&d_pat_found[patIndex], ULLONG_MAX, seqStart + offset) == ULLONG_MAX) {
 			atomicAdd(d_pat_matches, 1);
 		} else {
@@ -134,38 +134,38 @@ __global__ void matchPatternsKernel(
  * seq_length:    lunghezza della sequenza (intera)
  */
  __global__ void incrementMatchesKernel(
-    const unsigned long long* d_pat_found,
-    const unsigned long* d_pat_length,      
-    int* d_seq_matches,                     
-    int pat_number,
-    unsigned long seq_length
+	const unsigned long long* d_pat_found,
+	const unsigned long* d_pat_length,      
+	int* d_seq_matches,                     
+	int pat_number,
+	unsigned long seq_length
 ) {
-    // Quale pattern stiamo processando
-    int patId = blockIdx.x * blockDim.x + threadIdx.x;
-    // Offset del pattern (posizione della lettera all'interno del pattern)
-    int localOffset = blockIdx.y * blockDim.y + threadIdx.y;
+	// Quale pattern stiamo processando
+	int patId = blockIdx.x * blockDim.x + threadIdx.x;
+	// Offset del pattern (posizione della lettera all'interno del pattern)
+	int localOffset = blockIdx.y * blockDim.y + threadIdx.y;
 
-    // Fuori dal numero totale di pattern?
-    if (patId >= pat_number) return;
+	// Fuori dal numero totale di pattern?
+	if (patId >= pat_number) return;
 
-    // Posizione iniziale pattern
-    unsigned long long startPos = d_pat_found[patId];
-    if (startPos == ULLONG_MAX) {
-        // Pattern non trovato	
-        return;
-    }
+	// Posizione iniziale pattern
+	unsigned long long startPos = d_pat_found[patId];
+	if (startPos == ULLONG_MAX) {
+		// Pattern non trovato	
+		return;
+	}
 	// Lunghezza del pattern
-    unsigned long length = d_pat_length[patId];
-    // Troppo grande? esco
-    if (localOffset >= length) return;
+	unsigned long length = d_pat_length[patId];
+	// Troppo grande? esco
+	if (localOffset >= length) return;
 
-    // Calcola la posizione esatta sulla sequenza
-    unsigned long long pos = startPos + localOffset;
-    // Controllo per non sforare la sequenza
-    if (pos >= seq_length) return;
+	// Calcola la posizione esatta sulla sequenza
+	unsigned long long pos = startPos + localOffset;
+	// Controllo per non sforare la sequenza
+	if (pos >= seq_length) return;
 
-    // Incremento atomico del numero di match nella sequenza 
-    atomicAdd(&d_seq_matches[pos], 1);
+	// Incremento atomico del numero di match nella sequenza 
+	atomicAdd(&d_seq_matches[pos], 1);
 }
 
 
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
 	printf("\n");
 #endif // DEBUG
 
-        CUDA_CHECK_FUNCTION( cudaSetDevice(0) );
+		CUDA_CHECK_FUNCTION( cudaSetDevice(0) );
 
 	/* 2. Initialize data structures */
 	/* 2.1. Skip allocate and fill sequence */
@@ -419,7 +419,7 @@ int main(int argc, char *argv[]) {
 	}
 	for( ind=0; ind<pat_number; ind++ ) {
 		CUDA_CHECK_FUNCTION( cudaMalloc( &(d_pattern_in_host[ind]), sizeof(char) * pat_length[ind] ) );
-        CUDA_CHECK_FUNCTION( cudaMemcpy( d_pattern_in_host[ind], pattern[ind], pat_length[ind] * sizeof(char), cudaMemcpyHostToDevice ) );
+		CUDA_CHECK_FUNCTION( cudaMemcpy( d_pattern_in_host[ind], pattern[ind], pat_length[ind] * sizeof(char), cudaMemcpyHostToDevice ) );
 	}
 	CUDA_CHECK_FUNCTION( cudaMemcpy( d_pattern, d_pattern_in_host, pat_number * sizeof(char *), cudaMemcpyHostToDevice ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy(d_pat_length, pat_length, sizeof(unsigned long) * pat_number, cudaMemcpyHostToDevice) );
@@ -452,7 +452,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* 3. Start global timer */
-        CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
+		CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	double ttotal = cp_Wtime();
 
 /*
@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
 	// Definizione della dimensione del blocco
 	unsigned long dimBlockX = 32;
 	unsigned long dimBlockY = 12;
-    dim3 block(dimBlockX, dimBlockY);
+	dim3 block(dimBlockX, dimBlockY);
 
 	// Iterazione sui chunk di sequenza
 	for (unsigned long seqStart = 0; seqStart < seq_length; seqStart += (chunkSize - overlap)) {
@@ -561,10 +561,10 @@ int main(int argc, char *argv[]) {
 			if (patEnd > pat_number) patEnd = pat_number;
 			int numPatternsInThisBatch = patEnd - patStart;
 
-            // Dimensioni griglia (gridX = posizioni sequenza, gridY = pattern)
+			// Dimensioni griglia (gridX = posizioni sequenza, gridY = pattern)
 			unsigned long gridX = (chunkLen + dimBlockX - 1) / dimBlockX;
-            unsigned long gridY = (numPatternsInThisBatch + dimBlockY - 1) / dimBlockY;
-            dim3 grid(gridX, gridY);
+			unsigned long gridY = (numPatternsInThisBatch + dimBlockY - 1) / dimBlockY;
+			dim3 grid(gridX, gridY);
 
 			// Lancio del kernel
 			matchPatternsKernel<<<grid, block>>>(
@@ -669,7 +669,7 @@ int main(int argc, char *argv[]) {
  */
 
 	/* 8. Stop global timer */
-        CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
+		CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	ttotal = cp_Wtime() - ttotal;
 
 	/* 9. Output for leaderboard */
