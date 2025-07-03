@@ -52,7 +52,7 @@ double cp_Wtime(){
  * posizione in cui è stato trovato un pattern.
  */
 void increment_matches(int pat, unsigned long *pat_found, unsigned long *pat_length, int *seq_matches) {
-    #pragma omp parallel for schedule(guided)
+	#pragma omp parallel for schedule(guided)
 	for (unsigned long ind = 0; ind < pat_length[pat]; ind++) {
 		#pragma omp atomic
 		seq_matches[pat_found[pat] + ind]++;
@@ -80,15 +80,15 @@ void generate_rng_sequence( rng_t *random, float prob_G, float prob_C, float pro
  * La posizione di inizio è scelta con una distribuzione normale.
  */
 void copy_sample_sequence( rng_t *random, char *sequence, unsigned long seq_length, unsigned long pat_samp_loc_mean, unsigned long pat_samp_loc_dev, char *pattern, unsigned long length) {
-    // Sceglie una posizione casuale (distribuzione normale) da cui copiare
+	// Sceglie una posizione casuale (distribuzione normale) da cui copiare
 	unsigned long  location = (unsigned long)rng_next_normal( random, (double)pat_samp_loc_mean, (double)pat_samp_loc_dev );
-    // Limitazione della posizione per non uscire dai confini della sequenza
+	// Limitazione della posizione per non uscire dai confini della sequenza
 	if ( location > seq_length - length ) location = seq_length - length;
 	if ( location <= 0 ) location = 0;
 
 	// Copia un campione della sequenza dalla posizione calcolata
 	unsigned long ind; 
-    #pragma omp parallel for schedule(dynamic, 16)
+	#pragma omp parallel for schedule(dynamic, 16)
 	for( ind=0; ind<length; ind++ )
 		pattern[ind] = sequence[ind+location];
 }
@@ -370,13 +370,13 @@ int main(int argc, char *argv[]) {
 
 	// Inizializzazione array `pat_found` (traccia dove è stato trovato ogni pattern)
 	// `NOT_FOUND` per indicare che il modello non è stato ancora trovato
-    #pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static)
 	for( ind=0; ind<pat_number; ind++) {
 		pat_found[ind] = (unsigned long)NOT_FOUND;
 	}
 	// Inizializzazione array `seq_matches` (tiene traccia del numero di modelli che corrispondono a ciascuna posizione nella sequenza)
 	// `NOT_FOUND` per indicare che non è stata ancora trovata alcuna corrispondenza
-    #pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static)
 	for( lind=0; lind<seq_length; lind++) {
 		seq_matches[lind] = (int)NOT_FOUND;
 	}
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
 	 * Alla fine del loop parallelo, OpenMP combina automaticamente tutte le copie private
 	 * nella variabile globale pat_matches invece di una sincronizzazione manuale
 	 */
-    #pragma omp parallel for schedule (dynamic,4) reduction(+:pat_matches) private(lind, start)
+	#pragma omp parallel for schedule (dynamic,4) reduction(+:pat_matches) private(lind, start)
 	for( pat=0; pat < pat_number; pat++ ) {
 
 		/* 5.1. For each posible starting position */
