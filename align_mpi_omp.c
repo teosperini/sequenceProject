@@ -53,11 +53,11 @@ double cp_Wtime(){
  * posizione in cui è stato trovato un pattern.
  */
  void increment_matches(int pat, unsigned long *local_pat_found, unsigned long *pat_length, int *seq_matches) {
-    #pragma omp parallel for schedule(static)
-    for (unsigned long ind = 0; ind < pat_length[pat]; ind++) {
-        #pragma omp atomic
+	#pragma omp parallel for schedule(static)
+	for (unsigned long ind = 0; ind < pat_length[pat]; ind++) {
+		#pragma omp atomic
 		seq_matches[local_pat_found[pat] + ind]++;
-    }
+	}
 }
 
 
@@ -89,7 +89,7 @@ void copy_sample_sequence( rng_t *random, char *sequence, unsigned long seq_leng
 
 	/* Copia campione della sequenza */
 	unsigned long ind;
-    #pragma omp parallel for
+	#pragma omp parallel for
 	for( ind=0; ind<length; ind++ )
 		pattern[ind] = sequence[ind+location];
 }
@@ -471,7 +471,7 @@ int main(int argc, char *argv[]) {
 		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 	}
 	// Buffer globale per sommare i match di tutti i processi
-    int *global_seq_matches;
+	int *global_seq_matches;
 	global_seq_matches = (int *)calloc(seq_length, sizeof(int));
 	if ( global_seq_matches == NULL ) {
 		fprintf(stderr,"\n-- Error allocating aux sequence structures for size: %lu\n", seq_length );
@@ -480,33 +480,33 @@ int main(int argc, char *argv[]) {
 
 	/* 4. Initialize ancillary structures */
 
-    unsigned long *global_pat_found;
+	unsigned long *global_pat_found;
 	global_pat_found = (unsigned long *)malloc( sizeof(unsigned long) * pat_number );
 	if ( global_pat_found == NULL ) {
 		fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number );
 		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 	}
 
-    #pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static)
 	for( ind=0; ind<pat_number; ind++) {
-        global_pat_found[ind] = (unsigned long)NOT_FOUND;
+		global_pat_found[ind] = (unsigned long)NOT_FOUND;
 	}
 
-    #pragma omp parallel for schedule(static)
+	#pragma omp parallel for schedule(static)
 	for( lind=0; lind<seq_length; lind++) {
-        if (rank == 0){
+		if (rank == 0){
 			seq_matches[lind] = (int)NOT_FOUND;
-        } else {
+		} else {
 			seq_matches[lind] = 0;
 		}
 
-        global_seq_matches[lind] = (int)NOT_FOUND;
+		global_seq_matches[lind] = (int)NOT_FOUND;
 	}
 
 	/* 5. Search for each pattern */
 	unsigned long start;
-    int local_matches = 0;
-    int global_matches = 0;
+	int local_matches = 0;
+	int global_matches = 0;
 
 	#pragma omp parallel for schedule(dynamic,256) reduction(+:local_matches) private(lind, start)
 	for (int local_pat = 0; local_pat < local_pat_number; local_pat++) {
