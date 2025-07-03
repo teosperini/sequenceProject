@@ -401,7 +401,7 @@
 	}
 	else { // Ricezione dei pattern assegnati
 
-        // Allocazione dell'array di richieste non bloccanti per la ricezione
+		// Allocazione dell'array di richieste non bloccanti per la ricezione
 		MPI_Request *recv_requests = (MPI_Request *)malloc(2 * local_pat_number * sizeof(MPI_Request));
 		if (recv_requests == NULL) {
 			fprintf(stderr, "Errore nell'allocazione di recv_requests\n");
@@ -460,7 +460,7 @@
 		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 	}
 	// Buffer globale per sommare i match di tutti i processi
-    int *global_seq_matches;
+	int *global_seq_matches;
 	global_seq_matches = (int *)calloc(seq_length, sizeof(int));
 	if ( global_seq_matches == NULL ) {
 		fprintf(stderr,"\n-- Error allocating aux sequence structures for size: %lu\n", seq_length );
@@ -469,7 +469,7 @@
 
 	/* 4. Initialize ancillary structures */
 
-    unsigned long *global_pat_found;
+	unsigned long *global_pat_found;
 	global_pat_found = (unsigned long *)malloc( sizeof(unsigned long) * pat_number );
 	if ( global_pat_found == NULL ) {
 		fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number );
@@ -477,23 +477,23 @@
 	}
 
 	for( ind=0; ind<pat_number; ind++) {
-        global_pat_found[ind] = (unsigned long)NOT_FOUND;
+		global_pat_found[ind] = (unsigned long)NOT_FOUND;
 	}
 
 	for( lind=0; lind<seq_length; lind++) {
-        if (rank == 0){
+		if (rank == 0){
 			seq_matches[lind] = (int)NOT_FOUND;
-        } else {
+		} else {
 			seq_matches[lind] = 0;
 		}
 
-        global_seq_matches[lind] = (int)NOT_FOUND;
+		global_seq_matches[lind] = (int)NOT_FOUND;
 	}
 
 	/* 5. Search for each pattern */
 	unsigned long start;
-    int local_matches = 0;
-    int global_matches = 0;
+	int local_matches = 0;
+	int global_matches = 0;
 
 	for (int local_pat = 0; local_pat < local_pat_number; local_pat++) {
 	
@@ -560,8 +560,8 @@
 
 	// Usa MPI_Gatherv per raccogliere i risultati variabili direttamente in global_pat_found
 	MPI_Gatherv(local_filtered, local_count, MPI_UNSIGNED_LONG,
-	            global_pat_found, recv_counts, displs, MPI_UNSIGNED_LONG,
-	            0, MPI_COMM_WORLD);
+				global_pat_found, recv_counts, displs, MPI_UNSIGNED_LONG,
+				0, MPI_COMM_WORLD);
 
 	free(local_filtered);
 	if (rank == 0) {
@@ -569,7 +569,7 @@
 		free(displs);
 	}
 
-    // Riduce il numero totale di pattern trovati (local_matches -> global_matches)
+	// Riduce il numero totale di pattern trovati (local_matches -> global_matches)
 	MPI_Reduce(&local_matches, &global_matches, 1, MPI_UNSIGNED_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 	// Somma i match su ogni posizione della sequenza
 	MPI_Reduce(seq_matches, global_seq_matches, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -631,7 +631,7 @@
 				 checksum_found,
 				 checksum_matches );
 	 }
-				 
+
 	 /* 10. Free resources */	
 	 int i;
 	 for( i=0; i<pat_number; i++ ) free( pattern[i] );
