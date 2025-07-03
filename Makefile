@@ -27,7 +27,7 @@ help:
 	@echo
 	@echo "Exact genetic sequence alignment"
 	@echo
-	@echo "Group Trasgo, Universidad de Valladolid (Spain)"
+	@echo "Matteo Sperini, Giordana Foglia"
 	@echo
 	@echo "make align_seq	Build only the sequential version"
 	@echo "make align_omp	Build only the OpenMP version"
